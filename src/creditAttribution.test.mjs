@@ -238,6 +238,13 @@ const VETTED_VARS = new Set([
   '--dock-presets-pinned-height',
 ]);
 
+const VETTED_ENV_INSETS = new Set([
+  'safe-area-inset-top',
+  'safe-area-inset-right',
+  'safe-area-inset-bottom',
+  'safe-area-inset-left',
+]);
+
 /** Rules whose final compound targets a modelled element (pseudo-elements aside). */
 function ownBoxEntries() {
   const entries = [];
@@ -302,7 +309,7 @@ function toPx(value, viewportHeight, where) {
   const trimmed = value.trim();
   const inner = /^calc\(/.test(trimmed) ? trimmed.slice(5, -1) : trimmed;
   assert.doesNotMatch(inner, /\bcalc\(/, `nested calc() in ${where}: "${value}"`);
-  assert.doesNotMatch(inner, /\b(min|max|clamp|env|attr|round|mod)\(/, `unmodelled function in ${where}: "${value}"`);
+  assert.doesNotMatch(inner, /\b(min|max|clamp|attr|round|mod)\(/, `unmodelled function in ${where}: "${value}"`);
   assert.doesNotMatch(inner, /[*/]/, `unmodelled operator in ${where}: "${value}"`);
   assert.doesNotMatch(inner, /\s-\s/, `unmodelled subtraction in ${where}: "${value}"`);
   let total = 0;
@@ -314,6 +321,12 @@ function toPx(value, viewportHeight, where) {
       const name = term.slice(4, term.lastIndexOf(')')).split(',')[0].trim();
       assert.ok(VETTED_VARS.has(name), `unvetted custom property ${name} in ${where}: "${value}"`);
       continue; // proven non-negative; 0 is the conservative floor
+    }
+    if (term.startsWith('env(')) {
+      const [envName, fallback] = term.slice(4, term.lastIndexOf(')')).split(',').map((s) => s.trim());
+      assert.ok(VETTED_ENV_INSETS.has(envName), `unvetted env() ${envName} in ${where}: "${value}"`);
+      assert.equal(fallback, '0px', `env(${envName}) in ${where} must fall back to 0px: "${value}"`);
+      continue; // a safe-area inset is never negative; 0 is the conservative floor
     }
     assert.match(term, /^-?[\d.]+(px|rem|vh)$/, `unmodelled length term "${term}" in ${where}: "${value}"`);
     const number = Number.parseFloat(term);
@@ -557,7 +570,10 @@ test('the full-width context rail clears the required credit at every modelled v
 });
 
 test('the dock anchor changes at 720px — the 2vh cancellation is band-limited', () => {
-  assert.equal(resolve(['#command-dock'], 'bottom', 800, 'dock').decl.value, '2vh');
+  assert.equal(
+    resolve(['#command-dock'], 'bottom', 800, 'dock').decl.value,
+    'calc(2vh + env(safe-area-inset-bottom, 0px))',
+  );
   assert.equal(resolve(['#command-dock'], 'bottom', 720, 'dock').decl.value, '8px');
   assert.equal(
     resolve(CREDIT_SELECTORS, 'bottom', 720, 'credit').decl.value,

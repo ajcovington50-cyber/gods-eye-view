@@ -12,7 +12,12 @@ export function createBrowserViteConfig({
   port = 4173,
 } = {}) {
   return {
-    plugins: [cesium(), applicationHtmlPlugin(), basicAuthPlugin(), ...plugins],
+    plugins: [
+      cesium(),
+      applicationHtmlPlugin(),
+      basicAuthPlugin(),
+      ...plugins,
+    ].filter(Boolean),
     ...(publicDir === undefined ? {} : { publicDir }),
     server: {
       host: host || 'localhost',
@@ -37,7 +42,10 @@ export function createBrowserViteConfig({
     preview: {
       host: host || 'localhost',
       port: parseInt(port, 10) || 4173,
-      allowedHosts: host === '0.0.0.0' || host === '::' ? true : ['localhost', '127.0.0.1', '.local'],
+      allowedHosts:
+        host === '0.0.0.0' || host === '::'
+          ? true
+          : ['localhost', '127.0.0.1', '.local'],
     },
     define: {
       'import.meta.env.GOOGLE_MAPS_API_KEY': JSON.stringify(googleApiKey),

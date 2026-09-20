@@ -8,14 +8,15 @@ function safeEqual(a, b) {
 
 /**
  * Gate every request behind HTTP Basic Auth when GEV_AUTH_USER and
- * GEV_AUTH_PASS are both set. Absent either one, this is a no-op — local
- * development stays password-free by default. Meant for deployments reachable
+ * GEV_AUTH_PASS are both set. Absent either one, this returns null and adds
+ * no plugin at all — local development stays password-free by default and
+ * the plugin list keeps its usual shape. Meant for deployments reachable
  * from the open internet, since this app has no other login layer.
  */
 export function basicAuthPlugin() {
   const user = process.env.GEV_AUTH_USER;
   const pass = process.env.GEV_AUTH_PASS;
-  if (!user || !pass) return { name: 'gev-basic-auth' };
+  if (!user || !pass) return null;
 
   const expected = `Basic ${Buffer.from(`${user}:${pass}`).toString('base64')}`;
 
