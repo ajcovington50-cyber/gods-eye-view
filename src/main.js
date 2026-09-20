@@ -1,5 +1,8 @@
 import { createStandaloneApplication } from './standalone/application.js';
 import { describeError } from './standalone/errors.js';
+import { initMobileNav } from './ui/mobileNav.js';
+
+initMobileNav();
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

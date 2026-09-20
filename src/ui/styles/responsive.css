@@ -236,6 +236,29 @@
     max-width: calc(100vw - 24px);
     text-align: center;
   }
+
+  /* .hud-summary-wrap/.hud-ais-vessel default to desktop-width pixel caps
+     (420px/340px) wider than the viewport itself, so the classification/
+     summary readout overflowed past the screen edge instead of wrapping. */
+  .hud-summary-wrap,
+  .hud-ais-vessel {
+    max-width: calc(100vw - 90px);
+  }
+
+  /* Smaller, tighter HUD corner text buys back room on a phone screen. */
+  .hud-content {
+    font-size: 10px;
+    letter-spacing: 1.2px;
+  }
+
+  /* hud-top-left and hud-top-right shared the same top offset, so the short
+     REC/ORB readout on the right collided with the classification banner
+     and summary line on the left once either wrapped past one line. Stack
+     the right corner below instead of beside. */
+  #intel-hud[data-variant='tactical'] .hud-top-right,
+  #intel-hud[data-variant='operator'] .hud-top-right {
+    top: calc(max(14vh, 136px) + 140px);
+  }
 }
 
 @media (max-width: 520px) {

@@ -498,14 +498,40 @@ body:not(.ui-clean-view):not(.recording-mode):has(
     --dock-voice-width: 8.75rem;
   }
 
+  /* "LOCATION"/"VISUAL PRESETS" plus their icon don't fit a 3.25rem tray —
+     ellipsis just clipped mid-word ("L", "ESETS") rather than truncating
+     cleanly, reading as broken/overlapping text. Icon-only is legible at
+     this width; the label text is a raw text node beside the icon span
+     with no wrapper to hide, so font-size:0 collapses it without touching
+     the icon (sized in rem/px, unaffected by font-size). */
   #command-dock .panel-title,
   #command-dock .location-toolbar-label {
-    max-width: 2.3rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    justify-content: center;
+    max-width: none;
+    overflow: visible;
+    font-size: 0;
   }
 
   #left-panel-stack {
     bottom: calc(50vh + 8px);
+  }
+
+  /* At this width, .gev-voice-heading's three chips (kicker + OFF + STD +
+     cost) don't fit col2's available space and were spilling past the
+     voice card's own box into the location/presets trays beside it — clip
+     to the card, drop the least essential chips, and let the rest shrink. */
+  #command-dock > #gev-voice-control {
+    overflow: hidden;
+  }
+
+  #command-dock .gev-voice-kicker,
+  #command-dock .gev-voice-cost-value {
+    display: none;
+  }
+
+  #command-dock .gev-voice-heading,
+  #command-dock #gev-voice-status,
+  #command-dock .gev-voice-cost {
+    min-width: 0;
   }
 }
