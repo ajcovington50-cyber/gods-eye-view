@@ -6,8 +6,20 @@ function safeEqual(a, b) {
   return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
 }
 
+// PWA install assets: no user data, and platform install checks don't
+// reliably attach Basic Auth credentials when fetching them out-of-band —
+// notably iOS Safari's "Add to Home Screen" touch-icon fetch, which silently
+// falls back to a generic icon on a 401 instead of prompting for
+// credentials. Exempting them costs nothing (there's no data here) and fixes
+// that fallback.
+const PUBLIC_PATHS = new Set(['/manifest.webmanifest', '/sw.js']);
+
+export function isPublicAsset(pathname) {
+  return PUBLIC_PATHS.has(pathname) || pathname.startsWith('/icons/');
+}
+
 /**
- * Gate every request behind HTTP Basic Auth when GEV_AUTH_USER and
+ * Gate every other request behind HTTP Basic Auth when GEV_AUTH_USER and
  * GEV_AUTH_PASS are both set. Absent either one, this returns null and adds
  * no plugin at all — local development stays password-free by default and
  * the plugin list keeps its usual shape. Meant for deployments reachable
@@ -21,6 +33,10 @@ export function basicAuthPlugin() {
   const expected = `Basic ${Buffer.from(`${user}:${pass}`).toString('base64')}`;
 
   function middleware(req, res, next) {
+    if (isPublicAsset(req.url.split('?')[0])) {
+      next();
+      return;
+    }
     const header = req.headers.authorization || '';
     if (safeEqual(header, expected)) {
       next();
