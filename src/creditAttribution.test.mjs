@@ -205,6 +205,10 @@ const RECOGNIZED = new Set([
   // rail
   '#right-context-rail',
   '#right-context-rail.layout-focus',
+  // Mobile nav drawer: translateX only, never translateY/scale/matrix, so it
+  // cannot move the rail's `bottom` anchor the clearance math depends on —
+  // it just slides the rail on/off screen horizontally below 720px.
+  'body.mobile-nav-open #right-context-rail',
   // tray
   '#command-dock .dock-popover-content',
   '#command-dock #location-bar .dock-popover-content',
